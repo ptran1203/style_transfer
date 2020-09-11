@@ -196,9 +196,8 @@ class StyleTransferModel:
 
             batch_loss = self.init_hist()
             for content_img, style_img in data_gen.next_batch(augment_factor):
-                style_feat = self.encoder.predict(style_img)
-                loss = self.combined_model.train_on_batch([content_img, style_img],
-                                                          style_feat)
+                loss = self.transfer_model.train_on_batch([content_img, style_img],
+                                                          style_img)
                 batch_loss['loss'].append(loss)
 
             # evaluate
