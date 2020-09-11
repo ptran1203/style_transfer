@@ -86,8 +86,8 @@ class StyleTransferModel:
         self.transfer_model.add_loss(K.mean(K.square(combined_feat - gen_feat)))
         self.transfer_model.add_loss(self.compute_style_loss(gen_img, style_img))
         self.transfer_model.compile(optimizer=Adam(self.lr),
-                                    loss="mse",
-                                    loss_weight=[0])
+                                    loss=["mse"],
+                                    loss_weights=[0])
 
 
     def compute_style_loss(self, gen_img, style_img):
