@@ -100,14 +100,14 @@ class StyleTransferModel:
         if upsampling_mode == self.UP_NEAREAST:
             x = Conv2DTranspose(filters, kernel_size=kernel_size,
                                 strides=2, padding='same',
-                                activation=activation)
+                                activation=activation)(x)
 
             if batch_norm:
                 x = BatchNormalization()(x)
         else:
             # de-convolution
             x = Conv2D(filters, kernel_size=kernel_size, strides=2,
-                        padding='same', activation=activation)
+                        padding='same', activation=activation)(x)
             if batch_norm:
                 x = BatchNormalization()(x)
             x = UpSampling2D(size=(2, 2), interpolation='nearest')(x)
