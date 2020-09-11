@@ -228,10 +228,10 @@ class StyleTransferModel:
         plt.show()
 
     def save_weight(self):
-        self.ae_model.save_weights(self.base_dir + '/decoder.h5')
+        self.transfer_model.save_weights(self.base_dir + '/transfer_model.h5')
 
     def load_weight(self):
-        self.ae_model.load_weights(self.base_dir + '/decoder.h5')
+        self.transfer_model.load_weights(self.base_dir + '/transfer_model.h5')
 
 
     def generate(self, content_imgs, style_imgs):
