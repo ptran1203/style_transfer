@@ -56,7 +56,8 @@ class StyleTransferModel:
     UP_DECONV = 1
     UP_NEAREAST = 2
 
-    def __init__(self, rst, lr):
+    def __init__(self, base_dir, rst, lr):
+        self.base_dir = base_dir
         self.rst = rst
         self.lr = lr
         img_shape = (self.rst, self.rst, 3)
