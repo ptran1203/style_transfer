@@ -29,8 +29,6 @@ class AdaptiveInstanceNorm(Layer):
 
     def call(self, inputs):
         x, style = inputs
-        N, H, W, C = x.shape
-
         axis = [1, 2]
         x_mean = K.mean(x, axis=axis, keepdims=True)
         x_std = K.std(x, axis=axis, keepdims=True)
@@ -73,7 +71,7 @@ class StyleTransferModel:
         style_feat = self.encoder(style_img)
 
         combined_feat = AdaptiveInstanceNorm()([content_feat, style_feat])
-        self.decoder = self.build_decoder((8, 8, 512))
+        self.decoder = self.build_decoder((32, 32, 512))
 
         gen_img = self.decoder(combined_feat)
         gen_feat = self.encoder(gen_img)
@@ -109,6 +107,7 @@ class StyleTransferModel:
 
         return Reduction()(style_loss)
 
+
     def build_style_layers(self):
         img = Input((self.rst, self.rst, 3))
         layers = [
@@ -119,6 +118,7 @@ class StyleTransferModel:
             inputs=self.encoder.inputs,
             outputs=[self.encoder.get_layer(l).get_output_at(0) for l in layers]
         )
+
 
     def build_encoder(self):
         input_shape = (self.rst, self.rst, 3)
@@ -132,7 +132,11 @@ class StyleTransferModel:
         for layer in model.layers:
             layer.trainable = False
 
-        return model
+        return Model(
+            inputs=model.inputs,
+            outputs=model.get_layer('block4_conv3').get_output_at(0)
+        )
+
 
     def decode_block(self, x, filters, kernel_size,
                     activation, batch_norm=False,
@@ -160,7 +164,7 @@ class StyleTransferModel:
         feat = Input(input_shape)
         init_channel = 256
         kernel_size = 5
-        up_iterations = int(np.log(self.rst / np.log(2)))
+        up_iterations = 3
 
         x = self.decode_block(feat, 512, kernel_size=kernel_size,
                               activation='relu',
