@@ -47,6 +47,13 @@ class AdaptiveInstanceNorm(Layer):
         return input_shape[0]
 
 
+class Reduction(Layer):
+    def __init__(self):
+        super(ReductionLayer, self).__init__()
+
+    def call(self, inputs):
+        return tf.reduce_sum(inputs, axis=0)
+
 class StyleTransferModel:
     UP_DECONV = 1
     UP_NEAREAST = 2
@@ -58,6 +65,7 @@ class StyleTransferModel:
 
         # ===== Build the model ===== #
         self.encoder = self.build_encoder()
+        self.style_layers = self.build_style_layers()
         content_img = Input(shape=img_shape)
         style_img = Input(shape=img_shape)
 
@@ -70,14 +78,47 @@ class StyleTransferModel:
         gen_img = self.decoder(combined_feat)
         gen_feat = self.encoder(gen_img)
 
-        self.combined_model = Model(inputs=[content_img, style_img],
-                                    outputs=gen_feat)
-        self.combined_model.add_loss(K.mean(K.square(combined_feat - gen_feat)))
-        self.combined_model.compile(optimizer=Adam(self.lr), loss="mse")
+        # style loss
+        
 
         self.transfer_model = Model(inputs=[content_img, style_img],
                                     outputs=gen_img)
+        self.transfer_model.add_loss(K.mean(K.square(combined_feat - gen_feat)))
+        self.transfer_model.add_loss(self.compute_style_loss(gen_img, style_img))
+        self.transfer_model.compile(optimizer=Adam(self.lr),
+                                    loss="mse",
+                                    loss_weight=[0])
 
+
+    def compute_style_loss(self, gen_img, style_img):
+        gen_feats = self.style_layers(gen_img)
+        style_feats = self.style_layers(style_img)
+        style_loss = []
+        axis = [1, 2] # instance norm
+        for i in range(len(style_feats)):
+            gmean = K.mean(gen_feats[i], axis=axis)
+            gstd = K.std(gen_feats[i], axis=axis)
+
+            smean = K.mean(style_feats[i], axis=axis)
+            sstd = K.std(style_feats[i], axis=axis)
+
+            style_loss.append(
+                K.mean(K.square(gmean - smean)) +
+                K.mean(K.square(gstd - sstd))
+            )
+
+        return Reduction()(style_loss)
+
+    def build_style_layers(self):
+        img = Input((self.rst, self.rst, 3))
+        layers = [
+            'block1_conv2', 'block2_conv2',
+            'block3_conv3', 'block4_conv3'
+        ]
+        return Model(
+            inputs=self.encoder.inputs,
+            outputs=[self.encoder.get_layer(l) for l in layers]
+        )
 
     def build_encoder(self):
         input_shape = (self.rst, self.rst, 3)
