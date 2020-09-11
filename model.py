@@ -134,7 +134,7 @@ class StyleTransferModel:
         style_image = Conv2D(3, kernel_size=kernel_size, strides=1,
                    activation='tanh', padding='same')(x)
 
-        model = Model(inputs=input_tensor, outputs=style_image, name='decoder')
+        model = Model(inputs=feat, outputs=style_image, name='decoder')
         return model
 
 
