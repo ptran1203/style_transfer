@@ -117,10 +117,9 @@ class StyleTransferModel:
 
     def build_decoder(self, input_shape, upsampling_mode=UP_NEAREAST):
         feat = Input(input_shape)
-        init_feat_height = self.rst // 32
         init_channel = 256
         kernel_size = 5
-        up_iterations = int(np.log(32 / np.log(init_feat_height)))
+        up_iterations = int(np.log(self.rst / np.log(2)))
 
         x = self.decode_block(feat, 512, kernel_size=kernel_size,
                               activation='relu',
