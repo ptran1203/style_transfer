@@ -49,7 +49,7 @@ class AdaptiveInstanceNorm(Layer):
 
 class Reduction(Layer):
     def __init__(self):
-        super(ReductionLayer, self).__init__()
+        super(Reduction, self).__init__()
 
     def call(self, inputs):
         return tf.reduce_sum(inputs, axis=0)
