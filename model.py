@@ -117,7 +117,7 @@ class StyleTransferModel:
         ]
         return Model(
             inputs=self.encoder.inputs,
-            outputs=[self.encoder.get_layer(l).outputs[0] for l in layers]
+            outputs=[self.encoder.get_layer(l).get_output_at(0) for l in layers]
         )
 
     def build_encoder(self):
