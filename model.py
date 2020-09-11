@@ -160,19 +160,19 @@ class StyleTransferModel:
                                                           style_feat)
                 batch_loss['loss'].append(loss)
 
-        # evaluate
-        # batch_loss['val_loss'] = 
+            # evaluate
+            # batch_loss['val_loss'] = 
 
-        mean_loss = np.mean(np.array(batch_loss['loss']))
-        mean_val_loss = 0#np.mean(np.array(batch_loss['val_loss']))
+            mean_loss = np.mean(np.array(batch_loss['loss']))
+            mean_val_loss = 0#np.mean(np.array(batch_loss['val_loss']))
 
-        history['loss'].append(mean_loss)
-        history['val_loss'].append(mean_val_loss)
+            history['loss'].append(mean_loss)
+            history['val_loss'].append(mean_val_loss)
 
-        print("Loss: {}, Val Loss: {} - {}".format(
-            mean_loss, mean_val_loss,
-            datetime.datetime.now() - start_time
-        ))
+            print("Loss: {}, Val Loss: {} - {}".format(
+                mean_loss, mean_val_loss,
+                datetime.datetime.now() - start_time
+            ))
 
         self.history = history
         return history
