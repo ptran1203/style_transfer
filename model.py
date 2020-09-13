@@ -72,7 +72,8 @@ class StyleTransferModel:
         style_feat = self.encoder(style_img)
 
         combined_feat = AdaptiveInstanceNorm()([content_feat, style_feat])
-        self.decoder = self.build_decoder((32, 32, 512))
+        self.init_rst = K.int_shape(combined_feat)[1]
+        self.decoder = self.build_decoder((self.init_rst, self.init_rst, 512))
 
         gen_img = self.decoder(combined_feat)
         gen_feat = self.encoder(gen_img)
@@ -161,12 +162,22 @@ class StyleTransferModel:
 
         return x
 
+    
+    def iterations(self):
+        i = 0
+        init_rst = self.init_rst
+        while init_rst != self.rst:
+            i += 1
+            init_rst *= 2
+        
+        return i
+
 
     def build_decoder(self, input_shape, upsampling_mode=UP_NEAREAST):
         feat = Input(input_shape)
         init_channel = 256
         kernel_size = 3
-        up_iterations = 3
+        up_iterations = 4
 
         x = self.decode_block(feat, 512, kernel_size=kernel_size,
                               activation='relu',
