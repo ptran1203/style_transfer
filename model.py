@@ -144,7 +144,7 @@ class StyleTransferModel:
                     activation, batch_norm=False,
                     upsampling_mode=UP_NEAREAST):
 
-        if upsampling_mode == self.UP_NEAREAST:
+        if upsampling_mode == self.UP_DECONV:
             x = Conv2DTranspose(filters, kernel_size=kernel_size,
                                 strides=2, padding='same',
                                 activation=activation)(x)
@@ -153,7 +153,7 @@ class StyleTransferModel:
                 x = BatchNormalization()(x)
         else:
             # de-convolution
-            x = Conv2D(filters, kernel_size=kernel_size, strides=2,
+            x = Conv2D(filters, kernel_size=kernel_size, strides=1,
                         padding='same', activation=activation)(x)
             if batch_norm:
                 x = BatchNormalization()(x)
@@ -165,7 +165,7 @@ class StyleTransferModel:
     def build_decoder(self, input_shape, upsampling_mode=UP_NEAREAST):
         feat = Input(input_shape)
         init_channel = 256
-        kernel_size = 5
+        kernel_size = 3
         up_iterations = 3
 
         x = self.decode_block(feat, 512, kernel_size=kernel_size,
