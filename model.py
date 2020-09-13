@@ -177,7 +177,7 @@ class StyleTransferModel:
         feat = Input(input_shape)
         init_channel = 256
         kernel_size = 3
-        up_iterations = 4
+        up_iterations = iterations()
 
         x = self.decode_block(feat, 512, kernel_size=kernel_size,
                               activation='relu',
