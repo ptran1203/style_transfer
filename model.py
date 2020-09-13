@@ -18,7 +18,7 @@ from keras.layers import (
 )
 from keras.models import Sequential, Model, model_from_json
 from keras.optimizers import Adam
-from keras.applications.vgg16 import VGG16
+from keras.applications.vgg19 import VGG19
 
 
 class AdaptiveInstanceNorm(Layer):
@@ -112,8 +112,9 @@ class StyleTransferModel:
     def build_style_layers(self):
         img = Input((self.rst, self.rst, 3))
         layers = [
-            'block1_conv2', 'block2_conv2',
-            'block3_conv3', 'block4_conv3'
+            'block1_conv1', 'block2_conv1',
+            'block3_conv1', 'block4_conv1',
+            'block5_conv1'
         ]
         return Model(
             inputs=self.encoder.inputs,
@@ -123,7 +124,7 @@ class StyleTransferModel:
 
     def build_encoder(self):
         input_shape = (self.rst, self.rst, 3)
-        model = VGG16(
+        model = VGG19(
             include_top=False,
             weights='imagenet',
             input_tensor=Input(input_shape),
@@ -135,7 +136,7 @@ class StyleTransferModel:
 
         return Model(
             inputs=model.inputs,
-            outputs=model.get_layer('block4_conv3').get_output_at(0)
+            outputs=model.get_layer('block5_conv2').get_output_at(0)
         )
 
 
