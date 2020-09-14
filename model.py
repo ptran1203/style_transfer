@@ -185,9 +185,11 @@ class StyleTransferModel:
 
         x = self.conv_block(feat, 512, kernel_size=kernel_size,
                               activation='relu',
-                              upsampling_mode=upsampling_mode)
+                              upsampling_mode=upsampling_mode,
+                              conv_layers=2,
+                              skip_cont=self.encoder.get_layer(self.skip_conts[0]).get_output_at(0))
 
-        for i in range(up_iterations - 1):
+        for i in range(1, up_iterations):
             x = self.conv_block(x, init_channel, kernel_size=kernel_size,
                                   activation='relu',
                                   upsampling_mode=upsampling_mode,
