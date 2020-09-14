@@ -19,6 +19,7 @@ from keras.layers import (
 from keras.models import Sequential, Model, model_from_json
 from keras.optimizers import Adam
 from keras.applications.vgg19 import VGG19
+from keras.applications.vgg16 import VGG16
 
 DEFAULT_STYLE_LAYERS = [
     'block1_conv1', 'block2_conv1',
@@ -64,7 +65,8 @@ class StyleTransferModel:
                 style_layer_names=DEFAULT_STYLE_LAYERS,
                 last_layer=DEFAULT_LAST_LAYER,
                 skip_conts=DEFAULT_STYLE_LAYERS,
-                show_interval=25):
+                show_interval=25,
+                style_loss_weight=1):
         self.base_dir = base_dir
         self.rst = rst
         self.lr = lr
@@ -96,7 +98,7 @@ class StyleTransferModel:
         self.transfer_model = Model(inputs=[content_img, style_img],
                                     outputs=gen_img)
         self.transfer_model.add_loss(K.mean(K.square(combined_feat - gen_feat)))
-        self.transfer_model.add_loss(self.compute_style_loss(gen_img, style_img))
+        self.transfer_model.add_loss(style_loss_weight*self.compute_style_loss(gen_img, style_img))
         self.transfer_model.compile(optimizer=Adam(self.lr),
                                     loss=["mse"],
                                     loss_weights=[0])
@@ -132,7 +134,7 @@ class StyleTransferModel:
 
     def build_encoder(self):
         input_shape = (self.rst, self.rst, 3)
-        model = VGG19(
+        model = VGG16(
             include_top=False,
             weights='imagenet',
             input_tensor=Input(input_shape),
@@ -158,8 +160,8 @@ class StyleTransferModel:
             x = Conv2D(filters, kernel_size=kernel_size, strides=1,
                         padding='same', activation=activation)(x)
 
-        if skip_cont is not None:
-            x = Add()([x, skip_cont])
+        # if skip_cont is not None:
+            # x = Add()([x, skip_cont])
         if batch_norm:
             x = BatchNormalization()(x)
         x = UpSampling2D(size=(2, 2), interpolation='nearest')(x)

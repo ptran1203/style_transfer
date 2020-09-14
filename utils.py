@@ -1,5 +1,6 @@
 import pickle
 import numpy as np
+import urllib.request
 import keras.preprocessing.image as image_processing
 try:
     from google.colab.patches import cv2_imshow
@@ -74,3 +75,16 @@ def show_images(img_array):
     img = (img * 127.5 + 127.5).astype(np.uint8)
 
     cv2_imshow(img)
+
+def http_get_img(url, rst=64, gray=False, normalize=True):
+    req = urllib.request.urlopen(url)
+    arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
+    img = cv2.imdecode(arr, -1)
+    img = cv2.resize(img, (rst, rst))
+    if gray:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    img = img.reshape((1, rst, rst, -1))
+    if normalize:
+        img = norm(img)
+    return img
