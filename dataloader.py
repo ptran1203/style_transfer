@@ -9,14 +9,14 @@ except ImportError:
     from cv2 import imshow as cv2_imshow
 
 class DataGenerator:
-    def __init__(self, base_dir, batch_size):
+    def __init__(self, base_dir, batch_size, rst, max_size=500):
         self.base_dir = base_dir
         self.batch_size = batch_size
         self.x = utils.pickle_load(
-            os.path.join(self.base_dir, 'dataset/content_imgs.pkl'))
+            os.path.join(self.base_dir, 'dataset/content_imgs_{}.pkl'.format(rst)))[:max_size]
 
         self.y = utils.pickle_load(
-            os.path.join(self.base_dir, 'dataset/style_imgs.pkl'))
+            os.path.join(self.base_dir, 'dataset/style_imgs{}.pkl'.format(rst)))[:max_size]
 
         self.x = utils.norm(self.x)
         self.y = utils.norm(self.y)
