@@ -199,6 +199,10 @@ class StyleTransferModel:
                                   skip_cont=self.encoder.get_layer(self.skip_conts[i]).get_output_at(0))
             init_channel //= 2
 
+        x = Conv2D(init_channel, kernel_size=kernel_size, strides=1,
+                   activation='relu', padding='same')(x)
+        x = Conv2D(init_channel, kernel_size=kernel_size, strides=1,
+                   activation='relu', padding='same')(x)
         style_image = Conv2D(3, kernel_size=1, strides=1,
                    activation='tanh', padding='same')(x)
 
