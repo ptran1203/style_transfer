@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 import urllib.request
 import keras.preprocessing.image as image_processing
+import cv2
 try:
     from google.colab.patches import cv2_imshow
 except ImportError:
