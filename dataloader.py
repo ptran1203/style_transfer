@@ -20,9 +20,9 @@ class DataGenerator:
 
         self.x = utils.norm(self.x)
         self.y = utils.norm(self.y)
-        self.x, self.x_test, self.y, self.y_test = train_test_split(self.x, self.y,
-                                                                    test_size=0.2,
-                                                                    random_state=42)
+        # self.x, self.x_test, self.y, self.y_test = train_test_split(self.x, self.y,
+        #                                                             test_size=0.2,
+        #                                                             random_state=42)
 
 
     def augment_one(self, x, y):
