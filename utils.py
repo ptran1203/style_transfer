@@ -1,6 +1,10 @@
 import pickle
 import numpy as np
 import keras.preprocessing.image as image_processing
+try:
+    from google.colab.patches import cv2_imshow
+except ImportError:
+    from cv2 import imshow as cv2_imshow
 
 def pickle_save(object, path):
     try:
@@ -47,3 +51,26 @@ def weighted_samples(labels, class_weight):
         w.append(class_weight[labels[i]])
     
     return np.array(w)
+
+def show_images(img_array):
+    shape = img_array.shape
+    img_array = img_array.reshape(
+        (-1, shape[-4], shape[-3], shape[-2], shape[-1])
+    )
+    # convert 1 channel to 3 channels
+    channels = img_array.shape[-1]
+    resolution = img_array.shape[2]
+    img_rows = img_array.shape[0]
+    img_cols = img_array.shape[1]
+
+    img = np.full([resolution * img_rows, resolution * img_cols, channels], 0.0)
+    for r in range(img_rows):
+        for c in range(img_cols):
+            img[
+            (resolution * r): (resolution * (r + 1)),
+            (resolution * (c % 10)): (resolution * ((c % 10) + 1)),
+            :] = img_array[r, c]
+
+    img = (img * 127.5 + 127.5).astype(np.uint8)
+
+    cv2_imshow(img)

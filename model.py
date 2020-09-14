@@ -20,7 +20,11 @@ from keras.models import Sequential, Model, model_from_json
 from keras.optimizers import Adam
 from keras.applications.vgg19 import VGG19
 
-
+DEFAULT_STYLE_LAYERS = [
+    'block1_conv1', 'block2_conv1',
+    'bloc_cok3nv1', 'block4_conv1',
+]
+DEFAULT_LAST_LAYER = 'block4_conv1'
 class AdaptiveInstanceNorm(Layer):
     def __init__(self, epsilon=1e-3):
         super(AdaptiveInstanceNorm, self).__init__()
@@ -56,10 +60,16 @@ class StyleTransferModel:
     UP_DECONV = 1
     UP_NEAREAST = 2
 
-    def __init__(self, base_dir, rst, lr):
+    def __init__(self, base_dir, rst, lr,
+                style_layer_names=DEFAULT_STYLE_LAYERS,
+                last_layer=DEFAULT_LAST_LAYER,
+                skip_conts=DEFAULT_STYLE_LAYERS):
         self.base_dir = base_dir
         self.rst = rst
         self.lr = lr
+        self.style_layer_names = style_layer_names
+        self.last_layer = last_layer
+        self.skip_conts = skip_conts
         img_shape = (self.rst, self.rst, 3)
 
         # ===== Build the model ===== #
@@ -111,15 +121,10 @@ class StyleTransferModel:
 
 
     def build_style_layers(self):
-        img = Input((self.rst, self.rst, 3))
-        layers = [
-            'block1_conv1', 'block2_conv1',
-            'block3_conv1', 'block4_conv1',
-            'block5_conv1'
-        ]
         return Model(
             inputs=self.encoder.inputs,
-            outputs=[self.encoder.get_layer(l).get_output_at(0) for l in layers]
+            outputs=[self.encoder.get_layer(l).get_output_at(0) \
+                for l in self.style_layer_names]
         )
 
 
@@ -137,32 +142,29 @@ class StyleTransferModel:
 
         return Model(
             inputs=model.inputs,
-            outputs=model.get_layer('block5_conv2').get_output_at(0)
+            outputs=model.get_layer(self.last_layer).get_output_at(0)
         )
 
 
-    def decode_block(self, x, filters, kernel_size,
+    def conv_block(self, x, filters, kernel_size,
                     activation, batch_norm=False,
-                    upsampling_mode=UP_NEAREAST):
+                    upsampling_mode=UP_NEAREAST,
+                    conv_layers=1, skip_cont=None):
 
-        if upsampling_mode == self.UP_DECONV:
-            x = Conv2DTranspose(filters, kernel_size=kernel_size,
-                                strides=2, padding='same',
-                                activation=activation)(x)
 
-            if batch_norm:
-                x = BatchNormalization()(x)
-        else:
-            # de-convolution
+        for i in range(conv_layers):
             x = Conv2D(filters, kernel_size=kernel_size, strides=1,
                         padding='same', activation=activation)(x)
-            if batch_norm:
-                x = BatchNormalization()(x)
-            x = UpSampling2D(size=(2, 2), interpolation='nearest')(x)
+
+        if skip_cont is not None:
+            x = Add()([x, skip_cont])
+        if batch_norm:
+            x = BatchNormalization()(x)
+        x = UpSampling2D(size=(2, 2), interpolation='nearest')(x)
 
         return x
 
-    
+
     def iterations(self):
         i = 0
         init_rst = self.init_rst
@@ -179,14 +181,16 @@ class StyleTransferModel:
         kernel_size = 3
         up_iterations = self.iterations()
 
-        x = self.decode_block(feat, 512, kernel_size=kernel_size,
+        x = self.conv_block(feat, 512, kernel_size=kernel_size,
                               activation='relu',
                               upsampling_mode=upsampling_mode)
 
         for i in range(up_iterations - 1):
-            x = self.decode_block(x, init_channel, kernel_size=kernel_size,
+            x = self.conv_block(x, init_channel, kernel_size=kernel_size,
                                   activation='relu',
-                                  upsampling_mode=upsampling_mode)
+                                  upsampling_mode=upsampling_mode,
+                                  conv_layers=3,
+                                  skip_conts=self.encoder.get_layer(self.skip_conts[i]))
 
         style_image = Conv2D(3, kernel_size=kernel_size, strides=1,
                    activation='tanh', padding='same')(x)
@@ -244,8 +248,10 @@ class StyleTransferModel:
         plt.legend()
         plt.show()
 
+
     def save_weight(self):
         self.transfer_model.save_weights(self.base_dir + '/transfer_model.h5')
+
 
     def load_weight(self):
         self.transfer_model.load_weights(self.base_dir + '/transfer_model.h5')
@@ -257,12 +263,4 @@ class StyleTransferModel:
 
     def show_sample(self, content_img, style_img):
         gen_img = self.generate(content_img, style_img)
-
-        plt.figure(figsize=(18, 10))
-        plt.subplot(131)
-        plt.imshow(content_img[0])
-        plt.subplot(132)
-        plt.imshow(style_img[0])
-        plt.subplot(133)
-        plt.imshow(gen_img[0])
-        plt.show()
+        utils.show_images(np.concatenate([content_img, style_img, gen_img]))
