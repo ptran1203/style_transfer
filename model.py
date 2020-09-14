@@ -192,7 +192,7 @@ class StyleTransferModel:
                                   activation='relu',
                                   upsampling_mode=upsampling_mode,
                                   conv_layers=3,
-                                  skip_cont=self.encoder.get_layer(self.skip_conts[i]).get_out_at(0))
+                                  skip_cont=self.encoder.get_layer(self.skip_conts[i]).get_output_at(0))
 
         style_image = Conv2D(3, kernel_size=kernel_size, strides=1,
                    activation='tanh', padding='same')(x)
