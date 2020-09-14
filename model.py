@@ -63,13 +63,15 @@ class StyleTransferModel:
     def __init__(self, base_dir, rst, lr,
                 style_layer_names=DEFAULT_STYLE_LAYERS,
                 last_layer=DEFAULT_LAST_LAYER,
-                skip_conts=DEFAULT_STYLE_LAYERS):
+                skip_conts=DEFAULT_STYLE_LAYERS,
+                show_interval=25):
         self.base_dir = base_dir
         self.rst = rst
         self.lr = lr
         self.style_layer_names = style_layer_names
         self.last_layer = last_layer
         self.skip_conts = skip_conts
+        self.show_interval = show_interval
         img_shape = (self.rst, self.rst, 3)
 
         # ===== Build the model ===== #
@@ -234,6 +236,11 @@ class StyleTransferModel:
                 mean_loss, mean_val_loss,
                 datetime.datetime.now() - start_time
             ))
+
+            if e % self.show_interval == 0:
+                idx = np.random.randint(0, 400)
+                cimg, simg = data_gen.x[idx:idx+1], data_gen.y[idx:idx+1]
+                self.show_sample(cimg, simg)
 
         self.history = history
         return history
