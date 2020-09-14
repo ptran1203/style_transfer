@@ -16,7 +16,7 @@ class DataGenerator:
             os.path.join(self.base_dir, 'dataset/content_imgs_{}.pkl'.format(rst)))[:max_size]
 
         self.y = utils.pickle_load(
-            os.path.join(self.base_dir, 'dataset/style_imgs{}.pkl'.format(rst)))[:max_size]
+            os.path.join(self.base_dir, 'dataset/style_imgs_{}.pkl'.format(rst)))[:max_size]
 
         self.x = utils.norm(self.x)
         self.y = utils.norm(self.y)
