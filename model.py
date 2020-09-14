@@ -22,7 +22,7 @@ from keras.applications.vgg19 import VGG19
 
 DEFAULT_STYLE_LAYERS = [
     'block1_conv1', 'block2_conv1',
-    'bloc_cok3nv1', 'block4_conv1',
+    'block3_conv1', 'block4_conv1',
 ]
 DEFAULT_LAST_LAYER = 'block4_conv1'
 class AdaptiveInstanceNorm(Layer):
@@ -192,7 +192,7 @@ class StyleTransferModel:
                                   activation='relu',
                                   upsampling_mode=upsampling_mode,
                                   conv_layers=3,
-                                  skip_conts=self.encoder.get_layer(self.skip_conts[i]))
+                                  skip_cont=self.encoder.get_layer(self.skip_conts[i]))
 
         style_image = Conv2D(3, kernel_size=kernel_size, strides=1,
                    activation='tanh', padding='same')(x)
