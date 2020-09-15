@@ -76,7 +76,7 @@ class DataGenerator:
         for start_idx in range(0, max_id, self.batch_size):
             access_pattern = indices[start_idx:start_idx + self.batch_size]
 
-            if (start_idx == max_id - 1):
+            if (start_idx >= max_id - 1):
                 self.next_id()
 
             yield self.augment_array(
