@@ -201,6 +201,8 @@ class StyleTransferModel:
 
         x = Conv2D(init_channel, kernel_size=kernel_size, strides=1,
                    activation='relu', padding='same')(x)
+        x = Conv2D(init_channel, kernel_size=kernel_size, strides=1,
+                   activation='relu', padding='same')(x)
         style_image = Conv2D(3, kernel_size=1, strides=1,
                    activation='tanh', padding='same')(x)
 
