@@ -13,6 +13,7 @@ class DataGenerator:
         self.base_dir = base_dir
         self.batch_size = batch_size
         self.id = 4
+        self.rst = rst
         self.x = utils.pickle_load(
             os.path.join(self.base_dir, 'dataset/content_imgs_{}.pkl'.format(rst)))[:max_size]
 
@@ -32,6 +33,9 @@ class DataGenerator:
         self.id += 1
         if self.id > 10:
             self.id = 4
+        
+        self.y = utils.pickle_load(
+            os.path.join(self.base_dir, 'dataset/style_imgs_{}_{}.pkl'.format(self.rst, self.id)))[:self.max_size]
 
 
     def augment_one(self, x, y):
