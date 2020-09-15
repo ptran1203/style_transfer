@@ -181,7 +181,7 @@ class StyleTransferModel:
     def build_decoder(self, input_shape, upsampling_mode=UP_NEAREAST):
         feat = Input(input_shape)
         init_channel = 256
-        kernel_size = 3
+        kernel_size = 5
         up_iterations = self.iterations()
 
         x = self.conv_block(feat, 512, kernel_size=kernel_size,
@@ -202,7 +202,7 @@ class StyleTransferModel:
                    activation='relu', padding='same')(x)
         x = Conv2D(init_channel, kernel_size=kernel_size, strides=1,
                    activation='relu', padding='same')(x)
-        style_image = Conv2D(3, kernel_size=1, strides=1,
+        style_image = Conv2D(3, kernel_size=3, strides=1,
                    activation='tanh', padding='same')(x)
 
         model = Model(inputs=feat, outputs=style_image, name='decoder')
