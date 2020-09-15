@@ -251,7 +251,8 @@ class StyleTransferModel:
             ))
 
             if e % self.show_interval == 0:
-                idx = np.random.randint(0, 400)
+                self.save_weight()
+                idx = np.random.randint(0, data_gen.max_size - 1)
                 cimg, simg = data_gen.x[idx:idx+1], data_gen.y[idx:idx+1]
                 self.show_sample(cimg, simg)
 
