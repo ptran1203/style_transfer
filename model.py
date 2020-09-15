@@ -103,14 +103,6 @@ class StyleTransferModel:
                                     loss=["mse"],
                                     loss_weights=[0])
 
-    @staticmethod
-    def norm_layer(norm, x):
-        if norm is None:
-            return x
-        if norm == 'batch':
-            x = BatchNormalization()(x)
-        return x
-
 
     def compute_style_loss(self, gen_img, style_img):
         gen_feats = self.style_layers(gen_img)
@@ -158,24 +150,23 @@ class StyleTransferModel:
         )
 
 
-    def up_resblock(self, x, filters, kernel_size,
-                    activation, norm=None,
-                    interpolation='nearest',
-                    skip_cont=None):
+    def conv_block(self, x, filters, kernel_size,
+                    activation, batch_norm=False,
+                    upsampling_mode=UP_NEAREAST,
+                    conv_layers=1, skip_cont=None):
 
-        out = self.norm_layer(norm, x)
-        out = Activation(activation)(out)
-        out = UpSampling2D(size=(2, 2), interpolation=interpolation)(out)
-        out = Conv2D(filters, kernel_size, strides = 1, padding='same')(out)
 
-        out = self.norm_layer(norm, out)
-        out = Activation(activation)(out)
-        out = Conv2D(filters, kernel_size, strides = 1, padding='same')(out)
+        for i in range(conv_layers):
+            x = Conv2D(filters, kernel_size=kernel_size, strides=1,
+                        padding='same', activation=activation)(x)
 
-        x = UpSampling2D(size=(2, 2), interpolation=interpolation)(x)
-        x = Conv2D(filters, 1, strides = 1, padding='same')(x)
+        # if skip_cont is not None:
+            # x = Add()([x, skip_cont])
+        if batch_norm:
+            x = BatchNormalization()(x)
+        x = UpSampling2D(size=(2, 2), interpolation='nearest')(x)
 
-        return Add()([out, x])
+        return x
 
 
     def iterations(self):
@@ -188,24 +179,26 @@ class StyleTransferModel:
         return i
 
 
-    def build_decoder(self, input_shape):
+    def build_decoder(self, input_shape, upsampling_mode=UP_NEAREAST):
         feat = Input(input_shape)
         init_channel = 256
         kernel_size = 3
         up_iterations = self.iterations()
 
-        x = self.up_resblock(feat, 512, kernel_size=kernel_size,
+        x = self.conv_block(feat, 512, kernel_size=kernel_size,
                               activation='relu',
+                              upsampling_mode=upsampling_mode,
+                              conv_layers=1,
                               skip_cont=self.encoder.get_layer(self.skip_conts[0]).get_output_at(0))
 
         for i in range(1, up_iterations):
-            x = self.up_resblock(x, init_channel, kernel_size=kernel_size,
+            x = self.conv_block(x, init_channel, kernel_size=kernel_size,
                                   activation='relu',
+                                  upsampling_mode=upsampling_mode,
+                                  conv_layers=3,
                                   skip_cont=self.encoder.get_layer(self.skip_conts[i]).get_output_at(0))
             init_channel //= 2
 
-        x = Conv2D(init_channel, kernel_size=kernel_size, strides=1,
-                   activation='relu', padding='same')(x)
         x = Conv2D(init_channel, kernel_size=kernel_size, strides=1,
                    activation='relu', padding='same')(x)
         style_image = Conv2D(3, kernel_size=1, strides=1,
@@ -275,10 +268,7 @@ class StyleTransferModel:
 
 
     def load_weight(self):
-        try:
-            self.transfer_model.load_weights(self.base_dir + '/transfer_model.h5')
-        except Exception as e:
-            print("Load weight error, ", e)
+        self.transfer_model.load_weights(self.base_dir + '/transfer_model.h5')
 
 
     def generate(self, content_imgs, style_imgs):
