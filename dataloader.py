@@ -12,7 +12,7 @@ class DataGenerator:
     def __init__(self, base_dir, batch_size, rst, max_size=500):
         self.base_dir = base_dir
         self.batch_size = batch_size
-        self.id = 1
+        self.id = 4
         self.x = utils.pickle_load(
             os.path.join(self.base_dir, 'dataset/content_imgs_{}.pkl'.format(rst)))[:max_size]
 
@@ -31,7 +31,7 @@ class DataGenerator:
     def next_id(self):
         self.id += 1
         if self.id > 10:
-            self.id = 1
+            self.id = 4
 
 
     def augment_one(self, x, y):
