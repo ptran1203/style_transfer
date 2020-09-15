@@ -152,7 +152,6 @@ class StyleTransferModel:
 
     def conv_block(self, x, filters, kernel_size,
                     activation, batch_norm=False,
-                    upsampling_mode=UP_NEAREAST,
                     conv_layers=1, skip_cont=None):
 
 
@@ -165,6 +164,24 @@ class StyleTransferModel:
         if batch_norm:
             x = BatchNormalization()(x)
         x = UpSampling2D(size=(2, 2), interpolation='nearest')(x)
+
+        return x
+
+
+    def deconv_block(self, x, filters, kernel_size,
+                    activation, batch_norm=False,
+                    conv_layers=1, skip_cont=None):
+        for i in range(conv_layers):
+            x = Conv2D(filters, kernel_size=kernel_size, strides=1,
+                        padding='same', activation=activation)(x)
+
+        # if skip_cont is not None:
+            # x = Add()([x, skip_cont])
+        if batch_norm:
+            x = BatchNormalization()(x)
+        x = Conv2DTranspose(filters, kernel_size=kernel_size,
+                            strides=2,padding='same',
+                            activation=activation)(x)
 
         return x
 
@@ -187,14 +204,12 @@ class StyleTransferModel:
 
         x = self.conv_block(feat, 512, kernel_size=kernel_size,
                               activation='relu',
-                              upsampling_mode=upsampling_mode,
                               conv_layers=2,
                               skip_cont=self.encoder.get_layer(self.skip_conts[0]).get_output_at(0))
 
         for i in range(1, up_iterations):
             x = self.conv_block(x, init_channel, kernel_size=kernel_size,
                                   activation='relu',
-                                  upsampling_mode=upsampling_mode,
                                   conv_layers=3,
                                   skip_cont=self.encoder.get_layer(self.skip_conts[i]).get_output_at(0))
             init_channel //= 2
@@ -270,7 +285,10 @@ class StyleTransferModel:
 
 
     def load_weight(self):
-        self.transfer_model.load_weights(self.base_dir + '/transfer_model.h5')
+        try:
+            self.transfer_model.load_weights(self.base_dir + '/transfer_model.h5')
+        except Exception as e:
+            print("Load weight error, ", e)
 
 
     def generate(self, content_imgs, style_imgs):
