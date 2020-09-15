@@ -21,6 +21,11 @@ from keras.optimizers import Adam
 from keras.applications.vgg19 import VGG19
 from keras.applications.vgg16 import VGG16
 
+try:
+    from google.colab.patches import cv2_imshow
+except ImportError:
+    from cv2 import imshow as cv2_imshow
+
 DEFAULT_STYLE_LAYERS = [
     'block1_conv1', 'block2_conv1',
     'block3_conv1', 'block4_conv1',
@@ -276,6 +281,12 @@ class StyleTransferModel:
         return self.transfer_model.predict([content_imgs, style_imgs])
 
 
-    def show_sample(self, content_img, style_img):
+    def show_sample(self, content_img, style_img, concate=True):
         gen_img = self.generate(content_img, style_img)
-        utils.show_images(np.concatenate([content_img, style_img, gen_img]))
+
+        if concate:
+            return utils.show_images(np.concatenate([content_img, style_img, gen_img]))
+
+        cv2_imshow(utils.de_norm(content_img[0]))
+        cv2_imshow(utils.de_norm(style_img[0]))
+        cv2_imshow(utils.de_norm(gen_img[0]))
