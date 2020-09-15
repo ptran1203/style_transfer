@@ -12,11 +12,12 @@ class DataGenerator:
     def __init__(self, base_dir, batch_size, rst, max_size=500):
         self.base_dir = base_dir
         self.batch_size = batch_size
+        self.id = 1
         self.x = utils.pickle_load(
             os.path.join(self.base_dir, 'dataset/content_imgs_{}.pkl'.format(rst)))[:max_size]
 
         self.y = utils.pickle_load(
-            os.path.join(self.base_dir, 'dataset/style_imgs_{}.pkl'.format(rst)))[:max_size]
+            os.path.join(self.base_dir, 'dataset/style_imgs_{}_{}.pkl'.format(rst, self.id)))[:max_size]
 
         self.max_size = max_size
 
@@ -25,6 +26,12 @@ class DataGenerator:
         # self.x, self.x_test, self.y, self.y_test = train_test_split(self.x, self.y,
         #                                                             test_size=0.2,
         #                                                             random_state=42)
+
+
+    def next_id(self):
+        self.id += 1
+        if self.id > 10:
+            self.id = 1
 
 
     def augment_one(self, x, y):
@@ -61,9 +68,12 @@ class DataGenerator:
 
         indices = np.arange(x.shape[0])
         np.random.shuffle(indices)
-
-        for start_idx in range(0, x.shape[0] - self.batch_size + 1, self.batch_size):
+        max_id = x.shape[0] - self.batch_size + 1
+        for start_idx in range(0, max_id, self.batch_size):
             access_pattern = indices[start_idx:start_idx + self.batch_size]
+
+            if (start_idx == max_id - 1):
+                self.next_id()
 
             yield self.augment_array(
                 x[access_pattern, :, :, :],
