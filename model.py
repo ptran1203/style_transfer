@@ -160,7 +160,7 @@ class StyleTransferModel:
 
     def up_resblock(self, x, filters, kernel_size,
                     activation, norm=None,
-                    interpolation='neareast',
+                    interpolation='nearest',
                     skip_cont=None):
 
         out = self.norm_layer(norm, x)
