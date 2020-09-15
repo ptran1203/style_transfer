@@ -155,7 +155,7 @@ class StyleTransferModel:
                     upsampling_mode=UP_NEAREAST,
                     conv_layers=1, skip_cont=None):
 
-
+        x = UpSampling2D(size=(2, 2), interpolation='nearest')(x)
         for i in range(conv_layers):
             x = Conv2D(filters, kernel_size=kernel_size, strides=1,
                         padding='same', activation=activation)(x)
@@ -164,7 +164,6 @@ class StyleTransferModel:
             # x = Add()([x, skip_cont])
         if batch_norm:
             x = BatchNormalization()(x)
-        x = UpSampling2D(size=(2, 2), interpolation='nearest')(x)
 
         return x
 
