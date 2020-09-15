@@ -103,6 +103,14 @@ class StyleTransferModel:
                                     loss=["mse"],
                                     loss_weights=[0])
 
+    @staticmethod
+    def norm_layer(norm, x):
+        if norm is None:
+            return x
+        if norm == 'batch':
+            x = BatchNormalization()(x)
+        return x
+
 
     def compute_style_loss(self, gen_img, style_img):
         gen_feats = self.style_layers(gen_img)
@@ -150,40 +158,24 @@ class StyleTransferModel:
         )
 
 
-    def conv_block(self, x, filters, kernel_size,
-                    activation, batch_norm=False,
-                    conv_layers=1, skip_cont=None):
+    def up_resblock(self, x, filters, kernel_size,
+                    activation, norm=None,
+                    interpolation='neareast',
+                    skip_cont=None):
 
+        out = self.norm_layer(norm, x)
+        out = Activation(activation)(out)
+        out = UpSampling2D(size=(2, 2), interpolation=interpolation)(out)
+        out = Conv2D(filters, kernel_size, strides = 1, padding='same')(out)
 
-        for i in range(conv_layers):
-            x = Conv2D(filters, kernel_size=kernel_size, strides=1,
-                        padding='same', activation=activation)(x)
+        out = self.norm_layer(norm, out)
+        out = Activation(activation)(out)
+        out = Conv2D(filters, kernel_size, strides = 1, padding='same')(out)
 
-        # if skip_cont is not None:
-            # x = Add()([x, skip_cont])
-        if batch_norm:
-            x = BatchNormalization()(x)
-        x = UpSampling2D(size=(2, 2), interpolation='nearest')(x)
+        x = UpSampling2D(size=(2, 2), interpolation=interpolation)(x)
+        x = Conv2D(filters, 1, strides = 1, padding='same')(x)
 
-        return x
-
-
-    def deconv_block(self, x, filters, kernel_size,
-                    activation, batch_norm=False,
-                    conv_layers=1, skip_cont=None):
-        for i in range(conv_layers):
-            x = Conv2D(filters, kernel_size=kernel_size, strides=1,
-                        padding='same', activation=activation)(x)
-
-        # if skip_cont is not None:
-            # x = Add()([x, skip_cont])
-        if batch_norm:
-            x = BatchNormalization()(x)
-        x = Conv2DTranspose(filters, kernel_size=kernel_size,
-                            strides=2,padding='same',
-                            activation=activation)(x)
-
-        return x
+        return Add()([out, x])
 
 
     def iterations(self):
@@ -196,21 +188,19 @@ class StyleTransferModel:
         return i
 
 
-    def build_decoder(self, input_shape, upsampling_mode=UP_NEAREAST):
+    def build_decoder(self, input_shape):
         feat = Input(input_shape)
         init_channel = 256
         kernel_size = 3
         up_iterations = self.iterations()
 
-        x = self.conv_block(feat, 512, kernel_size=kernel_size,
+        x = self.up_resblock(feat, 512, kernel_size=kernel_size,
                               activation='relu',
-                              conv_layers=2,
                               skip_cont=self.encoder.get_layer(self.skip_conts[0]).get_output_at(0))
 
         for i in range(1, up_iterations):
-            x = self.conv_block(x, init_channel, kernel_size=kernel_size,
+            x = self.up_resblock(x, init_channel, kernel_size=kernel_size,
                                   activation='relu',
-                                  conv_layers=3,
                                   skip_cont=self.encoder.get_layer(self.skip_conts[i]).get_output_at(0))
             init_channel //= 2
 
