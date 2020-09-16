@@ -77,20 +77,29 @@ class DataGenerator:
 
     def next_batch(self, augment_factor):
         if self.multi_batch:
-            self._next_multi_batch()
+            x = self.x
+            indices = np.arange(x.shape[0])
+            np.random.shuffle(indices)
+            max_id = x.shape[0] - self.batch_size + 1
+            print("[", end="")
+            for i in range(6):
+                for start_idx in range(0, max_id, self.batch_size):
+                    access_pattern = indices[start_idx:start_idx + self.batch_size]
+
+                    yield (
+                        x[access_pattern, :, :, :],
+                        self.y[access_pattern],
+                    )
+                print("{}/6 - ".format(i+1), end="")
+                self.next_id()
+            print("]")
         else:
-            self._next_batch()
+            x = self.x
+            self.y = self.shuffle_style_imgs()
 
-
-    def _next_multi_batch(self):
-        x = self.x
-        # self.y = self.shuffle_style_imgs()
-
-        indices = np.arange(x.shape[0])
-        np.random.shuffle(indices)
-        max_id = x.shape[0] - self.batch_size + 1
-        print("[", end="")
-        for i in range(6):
+            indices = np.arange(x.shape[0])
+            np.random.shuffle(indices)
+            max_id = x.shape[0] - self.batch_size + 1
             for start_idx in range(0, max_id, self.batch_size):
                 access_pattern = indices[start_idx:start_idx + self.batch_size]
 
@@ -98,24 +107,6 @@ class DataGenerator:
                     x[access_pattern, :, :, :],
                     self.y[access_pattern],
                 )
-            print("{}/6 - ".format(i+1), end="")
-            self.next_id()
-        print("]")
-
-    def _next_batch(self):
-        x = self.x
-        self.y = self.shuffle_style_imgs()
-
-        indices = np.arange(x.shape[0])
-        np.random.shuffle(indices)
-        max_id = x.shape[0] - self.batch_size + 1
-        for start_idx in range(0, max_id, self.batch_size):
-            access_pattern = indices[start_idx:start_idx + self.batch_size]
-
-            yield (
-                x[access_pattern, :, :, :],
-                self.y[access_pattern],
-            )
 
     def get_random_sample(self, test=True):
         if test:
