@@ -102,7 +102,8 @@ class StyleTransferModel:
 
         self.transfer_model = Model(inputs=[content_img, style_img],
                                     outputs=gen_img)
-        self.transfer_model.add_loss(K.mean(K.square(combined_feat - gen_feat)))
+        content_loss = K.mean(K.square(combined_feat - gen_feat, axis=[1, 2]))
+        self.transfer_model.add_loss(Reduction()(content_loss))
         self.transfer_model.add_loss(style_loss_weight*self.compute_style_loss(gen_img, style_img))
         self.transfer_model.compile(optimizer=Adam(self.lr),
                                     loss=["mse"],
@@ -113,7 +114,7 @@ class StyleTransferModel:
         gen_feats = self.style_layers(gen_img)
         style_feats = self.style_layers(style_img)
         style_loss = []
-        axis = [1, 2] # instance norm
+        axis = [1, 2]
         for i in range(len(style_feats)):
             gmean = K.mean(gen_feats[i], axis=axis)
             gstd = K.std(gen_feats[i], axis=axis)
