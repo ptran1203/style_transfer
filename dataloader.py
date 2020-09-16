@@ -76,6 +76,7 @@ class DataGenerator:
         indices = np.arange(x.shape[0])
         np.random.shuffle(indices)
         max_id = x.shape[0] - self.batch_size + 1
+        print("[", end="")
         for id in range(6):
             for start_idx in range(0, max_id, self.batch_size):
                 access_pattern = indices[start_idx:start_idx + self.batch_size]
@@ -85,7 +86,9 @@ class DataGenerator:
                     self.y[access_pattern],
                     augment_factor,
                 )
+            print("=", end="")
             self.next_id()
+        print("]")
 
     def get_random_sample(self, test=True):
         if test:
