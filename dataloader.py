@@ -35,7 +35,10 @@ class DataGenerator:
             self.id = 4
         
         self.y = utils.pickle_load(
-            os.path.join(self.base_dir, 'dataset/style_imgs_{}_{}.pkl'.format(self.rst, self.id)))[:self.max_size]
+            os.path.join(
+                self.base_dir, 'dataset/style_imgs_{}_{}.pkl'.format(self.rst, self.id))
+        )[:self.max_size]
+        self.y = utils.norm(self.y)
 
 
     def augment_one(self, x, y):
@@ -68,23 +71,21 @@ class DataGenerator:
 
     def next_batch(self, augment_factor):
         x = self.x
-        y = self.shuffle_style_imgs()
+        # self.y = self.shuffle_style_imgs()
 
         indices = np.arange(x.shape[0])
         np.random.shuffle(indices)
         max_id = x.shape[0] - self.batch_size + 1
-        for start_idx in range(0, max_id, self.batch_size):
-            access_pattern = indices[start_idx:start_idx + self.batch_size]
+        for id in range(7):
+            for start_idx in range(0, max_id, self.batch_size):
+                access_pattern = indices[start_idx:start_idx + self.batch_size]
 
-            if (start_idx >= max_id - 1):
-                self.next_id()
-
-            yield self.augment_array(
-                x[access_pattern, :, :, :],
-                y[access_pattern],
-                augment_factor,
-            )
-
+                yield self.augment_array(
+                    x[access_pattern, :, :, :],
+                    self.y[access_pattern],
+                    augment_factor,
+                )
+            self.next_id()
 
     def get_random_sample(self, test=True):
         if test:
