@@ -180,11 +180,14 @@ class StyleTransferModel:
         x = self.conv_block(x, 256, kernel_size=kernel_size, up_sampling=True)
 
         x = self.conv_block(x, 128, kernel_size=kernel_size)
+        x = self.conv_block(x, 128, kernel_size=kernel_size)
+        x = self.conv_block(x, 128, kernel_size=kernel_size)
         x = self.conv_block(x, 128, kernel_size=kernel_size, up_sampling=True)
 
         x = self.conv_block(x, 64, kernel_size=kernel_size)
+        x = self.conv_block(x, 64, kernel_size=kernel_size)
 
-        style_image = self.conv_block(x, 3, kernel_size=kernel_size, activation='tanh')
+        style_image = self.conv_block(x, 3, kernel_size=kernel_size, activation='linear')
 
         model = Model(inputs=feat, outputs=style_image, name='decoder')
         return model

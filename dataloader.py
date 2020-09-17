@@ -46,7 +46,8 @@ class DataGenerator:
             os.path.join(
                 self.base_dir, 'dataset/style_imgs_{}_{}.pkl'.format(self.rst, self.id))
         )[:self.max_size]
-        self.y = utils.norm(self.y)
+        if normalize:
+            self.y = utils.norm(self.y)
 
 
     def augment_one(self, x, y):

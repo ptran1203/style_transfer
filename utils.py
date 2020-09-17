@@ -61,7 +61,8 @@ def weighted_samples(labels, class_weight):
     
     return np.array(w)
 
-def show_images(img_array):
+
+def show_images(img_array, denorm=True, deprcs=True):
     shape = img_array.shape
     img_array = img_array.reshape(
         (-1, shape[-4], shape[-3], shape[-2], shape[-1])
@@ -80,7 +81,10 @@ def show_images(img_array):
             (resolution * (c % 10)): (resolution * ((c % 10) + 1)),
             :] = img_array[r, c]
 
-    img = (img * 127.5 + 127.5).astype(np.uint8)
+    if denorm:
+        img = de_norm(img)
+    if deprcs:
+        img = deprocess(img)
 
     cv2_imshow(img)
 
