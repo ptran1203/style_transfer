@@ -95,5 +95,6 @@ def http_get_img(url, rst=64, gray=False, normalize=True):
     
     img = np.expand_dims(img, 0)
     if normalize:
-        img = norm(img)
+        img = norm(preprocess(img))
+
     return img
