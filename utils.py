@@ -85,7 +85,7 @@ def http_get_img(url, rst=64, gray=False, normalize=True):
     if gray:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
-    img = img.reshape((1, rst, rst, -1))
+    img = np.expand_dims(img, 0)
     if normalize:
         img = norm(img)
     return img
