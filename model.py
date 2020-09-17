@@ -87,15 +87,15 @@ class StyleTransferModel:
         content_img = Input(shape=img_shape)
         style_img = Input(shape=img_shape)
 
-        content_feat = self.encode(content_img)
-        style_feat = self.encode(style_img)
+        content_feat = self.encoder(content_img)
+        style_feat = self.encoder(style_img)
 
         combined_feat = AdaptiveInstanceNorm()([content_feat, style_feat])
         self.init_rst = K.int_shape(combined_feat)[1]
         self.decoder = self.build_decoder((self.init_rst, self.init_rst, 512))
 
         gen_img = self.decoder(combined_feat)
-        gen_feat = self.encode(gen_img)
+        gen_feat = self.encoder(gen_img)
 
         # style loss
         
@@ -110,18 +110,9 @@ class StyleTransferModel:
                                     loss_weights=[0.0])
 
 
-    def encode(self, images):
-        x = tf.cast(images, tf.float32)
-        x = preprocess_input(x)
-        return self.encoder(x)
-
-
     def compute_style_loss(self, gen_img, style_img):
-        gen_img = tf.cast(gen_img, tf.float32)
-        style_img = tf.cast(style_img, tf.float32)
-
-        gen_feats = self.style_layers(preprocess_input(gen_img))
-        style_feats = self.style_layers(preprocess_input(style_img))
+        gen_feats = self.style_layers(gen_img)
+        style_feats = self.style_layers(style_img)
         style_loss = []
         axis = [1, 2]
         for i in range(len(style_feats)):

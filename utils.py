@@ -35,6 +35,14 @@ def de_norm(imgs):
     return imgs * 127.5 + 127.5
 
 
+def preprocess(imgs):
+    return imgs - np.array([103.939, 116.779, 123.68])
+
+
+def deprocess(imgs):
+    return imgs + np.array([103.939, 116.779, 123.68])
+
+
 def transform(x, seed=0):
     np.random.seed(seed)
     img = image_processing.random_rotation(x, 0.2)

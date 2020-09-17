@@ -29,6 +29,9 @@ class DataGenerator:
 
         self.max_size = max_size
 
+        self.x = utils.preprocess(self.x)
+        self.y = utils.preprocess(self.y)
+
         if normalize:
             self.x = utils.norm(self.x)
             self.y = utils.norm(self.y)
