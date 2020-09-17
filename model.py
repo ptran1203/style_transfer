@@ -149,7 +149,7 @@ class StyleTransferModel:
 
     def build_encoder(self):
         input_shape = (self.rst, self.rst, 3)
-        model = VGG16(
+        model = VGG19(
             include_top=False,
             weights='imagenet',
             input_tensor=Input(input_shape),
