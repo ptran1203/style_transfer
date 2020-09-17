@@ -36,11 +36,14 @@ def de_norm(imgs):
 
 
 def preprocess(imgs):
-    return imgs - np.array([103.939, 116.779, 123.68])
+    """
+    BGR -> RBG then subtract the mean
+    """
+    return imgs[...,[2,1,0]] - np.array([103.939, 116.779, 123.68])
 
 
 def deprocess(imgs):
-    return imgs + np.array([103.939, 116.779, 123.68])
+    return imgs[...,[1,2,0]] + np.array([103.939, 116.779, 123.68])
 
 
 def transform(x, seed=0):
