@@ -80,7 +80,8 @@ def http_get_img(url, rst=64, gray=False, normalize=True):
     req = urllib.request.urlopen(url)
     arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
     img = cv2.imdecode(arr, -1)
-    img = cv2.resize(img, (rst, rst))
+    if rst is not None:
+        img = cv2.resize(img, (rst, rst))
     if gray:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
