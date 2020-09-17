@@ -13,7 +13,7 @@ class DataGenerator:
     multi_batch=False):
         self.base_dir = base_dir
         self.batch_size = batch_size
-        self.id = 4
+        self.id = 1
         self.rst = rst
         self.multi_batch = multi_batch
         self.x = utils.pickle_load(
@@ -82,7 +82,7 @@ class DataGenerator:
             np.random.shuffle(indices)
             max_id = x.shape[0] - self.batch_size + 1
             print("[", end="")
-            for i in range(6):
+            for i in range(self.BATCH_FILES):
                 for start_idx in range(0, max_id, self.batch_size):
                     access_pattern = indices[start_idx:start_idx + self.batch_size]
 
