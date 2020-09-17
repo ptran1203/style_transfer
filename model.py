@@ -123,8 +123,8 @@ class StyleTransferModel:
             sstd = K.std(style_feats[i], axis=axis)
 
             style_loss.append(
-                K.mean(K.square(gmean - smean)) +
-                K.mean(K.square(gstd - sstd))
+                Reduction()(K.square(gmean - smean)) +
+                Reduction()(K.square(gstd - sstd))
             )
 
         return Reduction()(style_loss)
