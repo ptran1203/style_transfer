@@ -107,7 +107,7 @@ class StyleTransferModel:
         self.transfer_model.add_loss(style_loss_weight*self.compute_style_loss(gen_img, style_img))
         self.transfer_model.compile(optimizer=Adam(self.lr),
                                     loss=["mse"],
-                                    loss_weights=[0])
+                                    loss_weights=[0.0])
 
 
     def compute_style_loss(self, gen_img, style_img):
@@ -175,6 +175,7 @@ class StyleTransferModel:
 
 
     def iterations(self):
+        return 3
         i = 0
         init_rst = self.init_rst
         while init_rst != self.rst:
@@ -190,10 +191,10 @@ class StyleTransferModel:
         kernel_size = 5
         up_iterations = self.iterations()
 
-        x = self.conv_block(feat, 512, kernel_size=kernel_size,
+        x = self.conv_block(feat, 512, kernel_size=kernel_size+2,
                               activation='relu',
                               upsampling_mode=upsampling_mode,
-                              conv_layers=2,
+                              conv_layers=1,
                               skip_cont=self.encoder.get_layer(self.skip_conts[0]).get_output_at(0))
 
         for i in range(1, up_iterations):
@@ -208,7 +209,7 @@ class StyleTransferModel:
                    activation='relu', padding='same')(x)
         x = Conv2D(init_channel, kernel_size=kernel_size, strides=1,
                    activation='relu', padding='same')(x)
-        style_image = Conv2D(3, kernel_size=3, strides=1,
+        style_image = Conv2D(3, kernel_size=kernel_size, strides=1,
                    activation='tanh', padding='same')(x)
 
         model = Model(inputs=feat, outputs=style_image, name='decoder')
