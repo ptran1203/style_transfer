@@ -38,8 +38,8 @@ class DataGenerator:
 
     def next_id(self):
         self.id += 1
-        if self.id > 10:
-            self.id = 4
+        if self.id > self.BATCH_FILES:
+            self.id = 1
         
         self.y = utils.pickle_load(
             os.path.join(
