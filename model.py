@@ -157,60 +157,34 @@ class StyleTransferModel:
 
 
     def conv_block(self, x, filters, kernel_size,
-                    activation, batch_norm=False,
-                    upsampling_mode=UP_NEAREAST,
-                    conv_layers=1, skip_cont=None):
+                    activation='relu', up_sampling=False):
 
-        for i in range(conv_layers):
-            x = Conv2D(filters, kernel_size=kernel_size, strides=1,
-                        padding='same', activation=activation)(x)
+        x = Conv2D(filters, kernel_size=kernel_size, strides=1,
+                    padding='same', activation=activation)(x)
 
-        # if skip_cont is not None:
-            # x = Add()([x, skip_cont])
-        if batch_norm:
-            x = BatchNormalization()(x)
+        if up_sampling:
+            x = UpSampling2D(size=(2, 2), interpolation='nearest')(x)
 
-        x = UpSampling2D(size=(2, 2), interpolation='nearest')(x)
         return x
 
 
-    def iterations(self):
-        return 3
-        i = 0
-        init_rst = self.init_rst
-        while init_rst != self.rst:
-            i += 1
-            init_rst *= 2
-        
-        return i
-
-
-    def build_decoder(self, input_shape, upsampling_mode=UP_NEAREAST):
+    def build_decoder(self, input_shape):
         feat = Input(input_shape)
-        init_channel = 256
         kernel_size = 5
-        up_iterations = self.iterations()
 
-        x = self.conv_block(feat, 512, kernel_size=kernel_size+2,
-                              activation='relu',
-                              upsampling_mode=upsampling_mode,
-                              conv_layers=1,
-                              skip_cont=self.encoder.get_layer(self.skip_conts[0]).get_output_at(0))
+        x = self.conv_block(feat, 512, kernel_size=kernel_size+2, up_sampling=True)
 
-        for i in range(1, up_iterations):
-            x = self.conv_block(x, init_channel, kernel_size=kernel_size,
-                                  activation='relu',
-                                  upsampling_mode=upsampling_mode,
-                                  conv_layers=3,
-                                  skip_cont=self.encoder.get_layer(self.skip_conts[i]).get_output_at(0))
-            init_channel //= 2
+        x = self.conv_block(x, 256, kernel_size=kernel_size)
+        x = self.conv_block(x, 256, kernel_size=kernel_size)
+        x = self.conv_block(x, 256, kernel_size=kernel_size)
+        x = self.conv_block(x, 256, kernel_size=kernel_size, up_sampling=True)
 
-        x = Conv2D(init_channel, kernel_size=kernel_size, strides=1,
-                   activation='relu', padding='same')(x)
-        x = Conv2D(init_channel, kernel_size=kernel_size, strides=1,
-                   activation='relu', padding='same')(x)
-        style_image = Conv2D(3, kernel_size=kernel_size, strides=1,
-                   activation='tanh', padding='same')(x)
+        x = self.conv_block(x, 128, kernel_size=kernel_size)
+        x = self.conv_block(x, 128, kernel_size=kernel_size, up_sampling=True)
+
+        x = self.conv_block(x, 64, kernel_size=kernel_size)
+
+        style_image = self.conv_block(x, 3, kernel_size=kernel_size, activation='tanh')
 
         model = Model(inputs=feat, outputs=style_image, name='decoder')
         return model
