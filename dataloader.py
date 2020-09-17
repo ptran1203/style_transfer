@@ -10,7 +10,7 @@ except ImportError:
 
 class DataGenerator:
     def __init__(self, base_dir, batch_size, rst, max_size=500,
-    multi_batch=False):
+    multi_batch=False, normalize=True):
         BATCH_FILES = 4
         self.base_dir = base_dir
         self.batch_size = batch_size
@@ -29,11 +29,9 @@ class DataGenerator:
 
         self.max_size = max_size
 
-        self.x = utils.norm(self.x)
-        self.y = utils.norm(self.y)
-        # self.x, self.x_test, self.y, self.y_test = train_test_split(self.x, self.y,
-        #                                                             test_size=0.2,
-        #                                                             random_state=42)
+        if normalize:
+            self.x = utils.norm(self.x)
+            self.y = utils.norm(self.y)
 
 
     def next_id(self):
