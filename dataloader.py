@@ -11,6 +11,7 @@ except ImportError:
 class DataGenerator:
     def __init__(self, base_dir, batch_size, rst, max_size=500,
     multi_batch=False):
+        BATCH_FILES = 4
         self.base_dir = base_dir
         self.batch_size = batch_size
         self.id = 1
