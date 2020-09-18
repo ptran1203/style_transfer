@@ -10,13 +10,15 @@ except ImportError:
 
 class DataGenerator:
     def __init__(self, base_dir, batch_size, rst, max_size=500,
-    multi_batch=False, normalize=True):
+    multi_batch=False, normalize=True,preprocessing=True):
         BATCH_FILES = 4
         self.base_dir = base_dir
         self.batch_size = batch_size
         self.id = 1
         self.rst = rst
         self.multi_batch = multi_batch
+        self.normalize = normalize
+        self.preprocessing = preprocessing
         self.x = utils.pickle_load(
             os.path.join(self.base_dir, 'dataset/content_imgs_{}.pkl'.format(rst)))[:max_size]
 
@@ -129,3 +131,15 @@ class DataGenerator:
             return cv2_imshow(utils.de_norm(self.y[idx]))
 
         return cv2_imshow(utils.de_norm(self.x[idx]))
+
+
+    def show_imgs(self, img):
+        if len(img.shape) == 4:
+            return utils.show_images(img, self.normalize, self.preprocessing)
+
+        if self.normalize:
+            img = utils.de_norm(img)
+        if self.preprocessing:
+            img = utils.deprocess(img)
+
+        cv2_imshow(img)

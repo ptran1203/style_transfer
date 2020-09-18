@@ -261,12 +261,22 @@ class StyleTransferModel:
         return self.transfer_model.predict([content_imgs, style_imgs])
 
 
-    def show_sample(self, content_img, style_img, concate=True):
+    def show_sample(self, content_img, style_img,
+                    concate=True, denorm=True, deprocess=True):
         gen_img = self.generate(content_img, style_img)
 
         if concate:
-            return utils.show_images(np.concatenate([content_img, style_img, gen_img]))
+            return utils.show_images(np.concatenate([content_img, style_img, gen_img]), denorm, deprocess)
 
-        cv2_imshow(utils.de_norm(content_img[0]))
-        cv2_imshow(utils.de_norm(style_img[0]))
-        cv2_imshow(utils.de_norm(gen_img[0]))
+        if denorm:
+            content_img = utils.de_norm(content_img)
+            style_img = utils.de_norm(style_img)
+            gen_img = utils.de_norm(gen_img)
+        if deprocess:
+            content_img = utils.deprocess(content_img)
+            style_img = utils.deprocess(style_img)
+            gen_img = utils.deprocess(gen_img)
+
+        cv2_imshow(content_img[0])
+        cv2_imshow(style_img[0])
+        cv2_imshow(gen_img[0])
