@@ -60,7 +60,7 @@ class Reduction(Layer):
         super(Reduction, self).__init__()
 
     def call(self, inputs):
-        return tf.reduce_sum(inputs, axis=0)
+        return tf.reduce_sum(inputs)
 
 class StyleTransferModel:
     UP_DECONV = 1
