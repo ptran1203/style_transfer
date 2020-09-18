@@ -123,8 +123,8 @@ class StyleTransferModel:
             sstd = K.std(style_feats[i], axis=axis)
 
             style_loss.append(
-                Reduction()(K.square(gmean - smean)) +
-                Reduction()(K.square(gstd - sstd))
+                K.sum(K.square(gmean - smean)) +
+                K.sum(K.square(gstd - sstd))
             )
 
         return Reduction()(style_loss)
@@ -140,7 +140,7 @@ class StyleTransferModel:
 
     def build_encoder(self):
         input_shape = (self.rst, self.rst, 3)
-        model = VGG19(
+        model = VGG16(
             include_top=False,
             weights='imagenet',
             input_tensor=Input(input_shape),
