@@ -187,7 +187,7 @@ class StyleTransferModel:
         x = self.conv_block(x, 64, kernel_size=kernel_size)
         x = self.conv_block(x, 64, kernel_size=kernel_size)
 
-        style_image = self.conv_block(x, 3, kernel_size=kernel_size, activation='linear')
+        style_image = self.conv_block(x, 3, kernel_size=kernel_size, activation='tanh')
 
         model = Model(inputs=feat, outputs=style_image, name='decoder')
         return model
