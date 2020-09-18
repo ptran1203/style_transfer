@@ -233,7 +233,8 @@ class StyleTransferModel:
                 self.save_weight()
                 idx = np.random.randint(0, data_gen.max_size - 1)
                 cimg, simg = data_gen.x[idx:idx+1], data_gen.y[idx:idx+1]
-                self.show_sample(cimg, simg)
+                gen_img = self.generate(cimg, simg)
+                data_gen.show_imgs(np.concatenate([cimg, simg, gen_img]))
 
         self.history = history
         return history
