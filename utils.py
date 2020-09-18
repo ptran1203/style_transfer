@@ -43,7 +43,7 @@ def preprocess(imgs):
 
 
 def deprocess(imgs):
-    return imgs[...,[0,1,2]] + np.array([103.939, 116.779, 123.68])
+    return (imgs + np.array([103.939, 116.779, 123.68]))[...,[2,1,0]]
 
 
 def transform(x, seed=0):
