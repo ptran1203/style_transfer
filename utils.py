@@ -8,6 +8,8 @@ try:
 except ImportError:
     from cv2 import imshow as cv2_imshow
 
+MEAN_PIXCELS = np.array([103.939, 116.779, 123.68])
+
 def pickle_save(object, path):
     try:
         print('save data to {} successfully'.format(path))
@@ -39,11 +41,13 @@ def preprocess(imgs):
     """
     BGR -> RBG then subtract the mean
     """
-    return imgs[...,[2,1,0]] - np.array([103.939, 116.779, 123.68])
+    return imgs - MEAN_PIXCELS
+    return imgs[...,[2,1,0]] - MEAN_PIXCELS
 
 
 def deprocess(imgs):
-    return (imgs + np.array([103.939, 116.779, 123.68]))[...,[2,1,0]]
+    return imgs + MEAN_PIXCELS
+    return (imgs + MEAN_PIXCELS)[...,[2,1,0]]
 
 
 def transform(x, seed=0):
