@@ -71,9 +71,11 @@ class StyleTransferModel:
                 last_layer=DEFAULT_LAST_LAYER,
                 skip_conts=DEFAULT_STYLE_LAYERS,
                 show_interval=25,
-                style_loss_weight=1):
+                style_loss_weight=1,
+                pre_trained_model='vgg16'):
         self.base_dir = base_dir
         self.rst = rst
+        self.pre_trained_model = pre_trained_model
         self.lr = lr
         self.style_layer_names = style_layer_names
         self.last_layer = last_layer
@@ -140,7 +142,8 @@ class StyleTransferModel:
 
     def build_encoder(self):
         input_shape = (self.rst, self.rst, 3)
-        model = VGG16(
+        vggnet = VGG16 if self.pre_trained_model == 'vgg16' else VGG19
+        model = vggnet(
             include_top=False,
             weights='imagenet',
             input_tensor=Input(input_shape),
