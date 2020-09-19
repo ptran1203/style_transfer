@@ -149,6 +149,7 @@ class StyleTransferModel:
             input_tensor=Input(input_shape),
             input_shape=input_shape,
         )
+        print('Encoder: {}'.format(model.name))
         model.trainable = False
         for layer in model.layers:
             layer.trainable = False
