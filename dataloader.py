@@ -31,8 +31,9 @@ class DataGenerator:
 
         self.max_size = max_size
 
-        self.x = utils.preprocess(self.x)
-        self.y = utils.preprocess(self.y)
+        if self.preprocessing:
+            self.x = utils.preprocess(self.x)
+            self.y = utils.preprocess(self.y)
 
         if normalize:
             self.x = utils.norm(self.x)
@@ -48,7 +49,10 @@ class DataGenerator:
             os.path.join(
                 self.base_dir, 'dataset/style_imgs_{}_{}.pkl'.format(self.rst, self.id))
         )[:self.max_size]
-        if normalize:
+
+        if self.preprocessing:
+            self.y = utils.preprocess(self.y)
+        if self.normalize:
             self.y = utils.norm(self.y)
 
 
