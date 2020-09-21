@@ -89,26 +89,24 @@ class StyleTransferModel:
         content_img = Input(shape=img_shape)
         style_img = Input(shape=img_shape)
 
-        content_feat = self.style_layers(content_img)
-        style_feat = self.style_layers(style_img)
+        content_feat = self.encoder(content_img)
+        style_feat = self.encoder(style_img)
 
-        combined_feats = [
-            AdaptiveInstanceNorm()([content_feat[i], style_feat[i]]) \
-                for i in range(self.style_layer_names)
-        ]
+        combined_feat = AdaptiveInstanceNorm()([content_feat, style_feat])
+        self.init_rst = K.int_shape(combined_feat)[1]
+        self.decoder = self.build_decoder((self.init_rst, self.init_rst, 512))
 
-        self.decoder = self.build_decoder(combined_feats)
+        gen_img = self.decoder(combined_feat)
+        gen_feat = self.encoder(gen_img)
 
-        gen_img, connections = self.decoder(combined_feats)
         # style loss
         
 
         self.transfer_model = Model(inputs=[content_img, style_img],
                                     outputs=gen_img)
-
-        self.transfer_model.add_loss(self.compute_content_loss(gen_img, style_img))
-        self.transfer_model.add_loss(style_loss_weight * self.compute_style_loss(gen_img, style_img))
-
+        content_loss = K.mean(K.square(combined_feat - gen_feat), axis=[1, 2])
+        self.transfer_model.add_loss(Reduction()(content_loss))
+        self.transfer_model.add_loss(style_loss_weight*self.compute_style_loss(gen_img, style_img))
         self.transfer_model.compile(optimizer=Adam(self.lr),
                                     loss=["mse"],
                                     loss_weights=[0.0])
@@ -132,21 +130,6 @@ class StyleTransferModel:
             )
 
         return Reduction()(style_loss)
-
-
-    def compute_content_loss(self, gen_img, content_img):
-        gen_feats = self.style_layers(gen_img)
-        content_feats = self.style_layers(content_img)
-
-        content_loss = []
-        axis = [1, 2]
-
-        for i in range(len(gen_feats)):
-            content_loss.append(
-                K.sum(K.square(content_feats[i] - gen_feats[i]))
-            )
-
-        return Reduction()(content_loss)
 
 
     def build_style_layers(self):
@@ -178,14 +161,10 @@ class StyleTransferModel:
 
 
     def conv_block(self, x, filters, kernel_size,
-                    activation='relu', up_sampling=False,
-                    skip_cont=None):
+                    activation='relu', up_sampling=False):
 
         x = Conv2D(filters, kernel_size=kernel_size, strides=1,
                     padding='same', activation=activation)(x)
-
-        if skip_cont is not None:
-            x = Add()([x, skip_cont])
 
         if up_sampling:
             x = UpSampling2D(size=(2, 2), interpolation='nearest')(x)
@@ -193,28 +172,24 @@ class StyleTransferModel:
         return x
 
 
-    def build_decoder(self, features):
-        feat_1 = Input((None, None, 64))
-        feat_2 = Input((None, None, 128))
-        feat_3 = Input((None, None, 256))
-        feat_4 = Input((None, None, 512))
-
+    def build_decoder(self, input_shape):
+        feat = Input(input_shape)
         kernel_size = 5
 
-        x = self.conv_block(feat, 512, kernel_size=kernel_size, up_sampling=True, skip_cont=feat_4)
+        x = self.conv_block(feat, 512, kernel_size=kernel_size, up_sampling=True)
 
         x = self.conv_block(x, 256, kernel_size=kernel_size)
         x = self.conv_block(x, 256, kernel_size=kernel_size)
         x = self.conv_block(x, 256, kernel_size=kernel_size)
-        x = self.conv_block(x, 256, kernel_size=kernel_size, up_sampling=True, skip_cont=feat_3)
+        x = self.conv_block(x, 256, kernel_size=kernel_size, up_sampling=True)
 
-        # x = self.conv_block(x, 128, kernel_size=kernel_size)
-        # x = self.conv_block(x, 128, kernel_size=kernel_size)
         x = self.conv_block(x, 128, kernel_size=kernel_size)
-        x = self.conv_block(x, 128, kernel_size=kernel_size, up_sampling=True, skip_cont=feat_2)
+        x = self.conv_block(x, 128, kernel_size=kernel_size)
+        x = self.conv_block(x, 128, kernel_size=kernel_size)
+        x = self.conv_block(x, 128, kernel_size=kernel_size, up_sampling=True)
 
         x = self.conv_block(x, 64, kernel_size=kernel_size)
-        x = self.conv_block(x, 64, kernel_size=kernel_size, skip_cont=feat_1)
+        x = self.conv_block(x, 64, kernel_size=kernel_size)
 
         style_image = self.conv_block(x, 3, kernel_size=kernel_size, activation='linear')
 
