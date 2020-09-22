@@ -6,22 +6,15 @@ import matplotlib.pyplot as plt
 import utils
 import keras.backend as K
 
-from keras.layers.convolutional import Conv2D, Conv2DTranspose
-from keras.layers import (
-    Input, Dense, Reshape,
-    Flatten, Dropout,
-    BatchNormalization, Activation,
-    Lambda, Layer, Add, Concatenate,
-    Average, UpSampling2D,
-    MaxPooling2D, AveragePooling2D,
-    GlobalMaxPooling2D, GlobalAveragePooling2D,
-)
-from keras.models import Sequential, Model, model_from_json
+from keras.layers.convolutional import Conv2D
+from keras.layers import Input, Activation, Layer, UpSampling2D
+from keras.models import Model
 from keras.optimizers import Adam
-from keras.applications.vgg19 import VGG19, preprocess_input
+from keras.applications.vgg19 import VGG19
 from keras.applications.vgg16 import VGG16
 
 try:
+    # In case run on google colab
     from google.colab.patches import cv2_imshow
 except ImportError:
     from cv2 import imshow as cv2_imshow
@@ -31,6 +24,8 @@ DEFAULT_STYLE_LAYERS = [
     'block3_conv1', 'block4_conv1',
 ]
 DEFAULT_LAST_LAYER = 'block4_conv1'
+
+
 class AdaptiveInstanceNorm(Layer):
     def __init__(self, epsilon=1e-3):
         super(AdaptiveInstanceNorm, self).__init__()
@@ -63,13 +58,9 @@ class Reduction(Layer):
         return tf.reduce_sum(inputs)
 
 class StyleTransferModel:
-    UP_DECONV = 1
-    UP_NEAREAST = 2
-
     def __init__(self, base_dir, rst, lr,
                 style_layer_names=DEFAULT_STYLE_LAYERS,
                 last_layer=DEFAULT_LAST_LAYER,
-                skip_conts=DEFAULT_STYLE_LAYERS,
                 show_interval=25,
                 style_loss_weight=1,
                 pre_trained_model='vgg16'):
@@ -79,7 +70,6 @@ class StyleTransferModel:
         self.lr = lr
         self.style_layer_names = style_layer_names
         self.last_layer = last_layer
-        self.skip_conts = skip_conts
         self.show_interval = show_interval
         img_shape = (self.rst, self.rst, 3)
 
@@ -98,9 +88,6 @@ class StyleTransferModel:
 
         gen_img = self.decoder(combined_feat)
         gen_feat = self.encoder(gen_img)
-
-        # style loss
-        
 
         self.transfer_model = Model(inputs=[content_img, style_img],
                                     outputs=gen_img)
@@ -255,11 +242,17 @@ class StyleTransferModel:
 
 
     def save_weight(self):
-        self.transfer_model.save_weights(self.base_dir + '/transfer_model.h5')
+        try:
+            self.transfer_model.save_weights(self.base_dir + '/transfer_model.h5')
+        except Exception as e:
+            print("Could not load model, {}".format(str(e))) 
 
 
     def load_weight(self):
-        self.transfer_model.load_weights(self.base_dir + '/transfer_model.h5')
+        try:
+            self.transfer_model.load_weights(self.base_dir + '/transfer_model.h5')
+        except Exception as e:
+            print("Save model failed, {}".format(str(e))) 
 
 
     def generate(self, content_imgs, style_imgs):
