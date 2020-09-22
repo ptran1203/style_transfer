@@ -50,25 +50,6 @@ def deprocess(imgs):
     return (imgs + MEAN_PIXCELS)[...,[2,1,0]]
 
 
-def transform(x, seed=0):
-    np.random.seed(seed)
-    img = image_processing.random_rotation(x, 0.2)
-    img = image_processing.random_shear(img, 30)
-    img = image_processing.random_zoom(img, (0.5, 1.1))
-    if np.random.rand() >= 0.5:
-        img = np.fliplr(img)
-
-    return img
-
-
-def weighted_samples(labels, class_weight):
-    w = []
-    for i in range(len(labels)):
-        w.append(class_weight[labels[i]])
-    
-    return np.array(w)
-
-
 def show_images(img_array, denorm=True, deprcs=True):
     shape = img_array.shape
     img_array = img_array.reshape(

@@ -10,7 +10,7 @@ except ImportError:
 
 class DataGenerator:
     def __init__(self, base_dir, batch_size, rst, max_size=500,
-    multi_batch=False, normalize=True,preprocessing=True):
+    multi_batch=False, normalize=True, preprocessing=True):
         BATCH_FILES = 4
         self.base_dir = base_dir
         self.batch_size = batch_size
@@ -18,16 +18,14 @@ class DataGenerator:
         self.rst = rst
         self.multi_batch = multi_batch
         self.normalize = normalize
+        self.max_size = max_size
         self.preprocessing = preprocessing
-        self.x = utils.pickle_load(
-            os.path.join(self.base_dir, 'dataset/content_imgs_{}.pkl'.format(rst)))[:max_size]
+        self.x = self.get_content_images()
 
         if multi_batch:
-            self.y = utils.pickle_load(
-                os.path.join(self.base_dir, 'dataset/style_imgs_{}_{}.pkl'.format(rst, self.id)))[:max_size]
+            self.y = self.get_style_images(self.id)
         else:
-            self.y = utils.pickle_load(
-                os.path.join(self.base_dir, 'dataset/style_imgs_{}.pkl'.format(rst)))[:max_size]
+            self.y = self.get_style_images()
 
         self.max_size = max_size
 
@@ -40,15 +38,26 @@ class DataGenerator:
             self.y = utils.norm(self.y)
 
 
+    def get_content_images(self):
+        return utils.pickle_load(
+            os.path.join(self.base_dir, 'dataset/content_imgs_{}.pkl'.format(self.rst)))[:self.max_size]
+
+    def get_style_images(self, _id=""):
+        fname = 'style_imgs_{}'.format(self.rst)
+
+        if _id:
+            fname += "_" + str(_id)
+
+        self.y = utils.pickle_load(
+                os.path.join(self.base_dir, 'dataset/{}.pkl'.format(fname)))[:self.max_size]
+
+
     def next_id(self):
         self.id += 1
         if self.id > self.BATCH_FILES:
             self.id = 1
         
-        self.y = utils.pickle_load(
-            os.path.join(
-                self.base_dir, 'dataset/style_imgs_{}_{}.pkl'.format(self.rst, self.id))
-        )[:self.max_size]
+        self.y = self.get_style_images(self.id)[:self.max_size]
 
         if self.preprocessing:
             self.y = utils.preprocess(self.y)
