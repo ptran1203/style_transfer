@@ -170,8 +170,8 @@ class StyleTransferModel:
         x = self.conv_block(x, 256, kernel_size=kernel_size)
         x = self.conv_block(x, 256, kernel_size=kernel_size, up_sampling=True)
 
-        x = self.conv_block(x, 128, kernel_size=kernel_size)
-        x = self.conv_block(x, 128, kernel_size=kernel_size)
+        # x = self.conv_block(x, 128, kernel_size=kernel_size)
+        # x = self.conv_block(x, 128, kernel_size=kernel_size)
         x = self.conv_block(x, 128, kernel_size=kernel_size)
         x = self.conv_block(x, 128, kernel_size=kernel_size, up_sampling=True)
 
