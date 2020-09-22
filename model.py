@@ -161,7 +161,7 @@ class StyleTransferModel:
 
     def build_decoder(self, input_shape):
         feat = Input(input_shape)
-        kernel_size = 5
+        kernel_size = 3
 
         x = self.conv_block(feat, 512, kernel_size=kernel_size, up_sampling=True)
 
