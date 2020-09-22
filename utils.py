@@ -10,20 +10,21 @@ except ImportError:
 
 MEAN_PIXCELS = np.array([103.939, 116.779, 123.68])
 
-def pickle_save(object, path):
+def pickle_save(object, path, log=False):
     try:
-        print('save data to {} successfully'.format(path))
+        log and print('save data to {} successfully'.format(path))
         with open(path, "wb") as f:
             return pickle.dump(object, f)
     except:
-        print('save data to {} failed'.format(path))
+        log and print('save data to {} failed'.format(path))
 
 
-def pickle_load(path):
+def pickle_load(path, log=False):
     try:
-        # print("Loading data from {} - ".format(path))
+        log and print("Loading data from {} - ".format(path))
         with open(path, "rb") as f:
             data = pickle.load(f)
+            log and print("DONE")
             return data
     except Exception as e:
         print(str(e))
