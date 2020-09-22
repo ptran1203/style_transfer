@@ -42,13 +42,14 @@ class DataGenerator:
         return utils.pickle_load(
             os.path.join(self.base_dir, 'dataset/content_imgs_{}.pkl'.format(self.rst)))[:self.max_size]
 
+
     def get_style_images(self, _id=""):
         fname = 'style_imgs_{}'.format(self.rst)
 
         if _id:
             fname += "_" + str(_id)
 
-        self.y = utils.pickle_load(
+        return utils.pickle_load(
                 os.path.join(self.base_dir, 'dataset/{}.pkl'.format(fname)))[:self.max_size]
 
 
