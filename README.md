@@ -3,7 +3,7 @@
 
 ![artchitecture](/images/architecture.jpg)
 
-The model architecture proposed by Huang et al., a fixed VGG19 is used to encode both content and style image. The outputs are passed through the adaptive instance normalization (AdaIN) which normalizes the content feature then scale and shift by mean and variance calculated from style feature.
+The model architecture proposed by Huang et al., a fixed VGG19 is used to encode both content and style image. The outputs are passed through the adaptive instance normalization (AdaIN) which normalizes the content feature then scale and shift by mean and variance calculated from style feature to have similar global context with the style image. Then, a decoder is used to generate new image from the normalized feature.
 
 ------
 
