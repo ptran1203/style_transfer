@@ -21,3 +21,4 @@ The model architecture proposed by Huang et al., a fixed VGG19 is used to encode
 - Runtime: Google colaboratory
 - Tensorflow `1.15` and Keras `2.2.5`
 - Dataset: [Google Scraped Image](https://www.kaggle.com/duttadebadri/image-classification) and [Best Artworks of all times](https://www.kaggle.com/ikarus777/best-artworks-of-all-time)
+- You can find the ready-to-train dataset and trained weights [here](https://drive.google.com/drive/folders/16iG3RGRUbRBn0h9fydwlAZtjFzSV1eUg?usp=sharing)
